@@ -90,12 +90,12 @@ const typeDefs = gql`
         published: Int!
         author: String!
         id: String!
-        genres: [String!]!
+        genre: [String!]!
     }
     type Query {
         bookCount: Int
         authorCount: Int
-        allBooks(author: String, genres: String): [Books]
+        allBooks(author: String, genre: String): [Books]
         allAuthors: [Authors!]!
     }
     type Mutation {
@@ -106,7 +106,7 @@ const typeDefs = gql`
             id: String
             genres: [String]
         ): Books
-        addAuthor(name: String, id: String, born: Int): Authors
+        editAuthor(name: String, setBornTo: Int): Authors
     }
 `;
 
@@ -118,12 +118,12 @@ const resolvers = {
             if (args.author) {
                 return books.filter((book) => args.author === book.author);
             }
-            if (args.genres) {
+            if (args.genre) {
                 return books.filter(
                     //
                     (book) =>
                         book.genres.filter((gen) =>
-                            args.genres === gen ? gen : false
+                            args.genre === gen ? gen : false
                         )[0]
                 );
             }
@@ -143,9 +143,23 @@ const resolvers = {
             books.concat(book);
 
             if (!authors.find((a) => a.name === args.author)) {
-                authors.concat({ id: uuid(), author: args.author });
+                const author = { name: args.author, id: uuid(), born: null };
+                authors = authors.concat(author);
             }
             return book;
+        },
+        editAuthor: (root, args) => {
+            const authorExist = authors.find((a) => a.name === args.name);
+            console.log(authorExist);
+            if (!authorExist) {
+                return null;
+            }
+            authors = authors.map((a) =>
+                a.name === args.name
+                    ? { ...a, name: args.name, born: args.setBornTo }
+                    : a
+            );
+            return { name: args.name, born: args.setBornTo };
         },
     },
 };
