@@ -90,7 +90,7 @@ const typeDefs = gql`
         published: Int!
         author: String!
         id: String!
-        genre: [String!]!
+        genres: [String]
     }
     type Query {
         bookCount: Int
@@ -140,7 +140,7 @@ const resolvers = {
     Mutation: {
         addBook: (root, args) => {
             const book = { ...args, id: uuid() };
-            books.concat(book);
+            books = books.concat(book);
 
             if (!authors.find((a) => a.name === args.author)) {
                 const author = { name: args.author, id: uuid(), born: null };
